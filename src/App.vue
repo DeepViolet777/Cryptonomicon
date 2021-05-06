@@ -48,7 +48,7 @@
         <div
         v-for="t in tickers"
         :key="t.name"
-        @click="selected = t"
+        @click="select(t)"
         :class="{
           'border-4': selected === t
           }"
@@ -92,16 +92,10 @@
       </h3>
       <div class="flex items-end border-gray-600 border-b border-l h-64">
         <div
-          class="bg-purple-800 border w-10 h-24"
-        ></div>
-        <div
-          class="bg-purple-800 border w-10 h-32"
-        ></div>
-        <div
-          class="bg-purple-800 border w-10 h-48"
-        ></div>
-        <div
-          class="bg-purple-800 border w-10 h-16"
+        v-for="(bar,idx) in normalizeGraph()"
+        :key="idx"
+        :style="{height: `${bar}%`}"
+        class="bg-purple-800 border w-10"
         ></div>
       </div>
       <button
@@ -144,29 +138,53 @@ export default {
 
   data(){
     return{
-      ticker:"default",
-      tickers:[
-        { name: "demo1", price:"0" },
-        { name: "demo2", price:"0" },
-        { name: "demo3", price:"0" },
-      ],
+      ticker:"",
+      tickers:[],
       selected: null,
+      graph: [],
     };
   },
 
   methods:{
     add(){
-      const newTicker = {
+      const currentTicker = {
         name: this.ticker,
         price: "-"
       };
 
-      this.tickers.push(newTicker);
+      this.tickers.push(currentTicker);
+      setInterval(async()=>{
+       const f = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${currentTicker.name}&tsyms=USD&api_key=bed0f4c93834f7f6d56ef5405c825cf705f0ec1b73898c19268ec067c9a16e25`);
+       const data = await f.json();
+       //this.tickers.find(t => t.name === newTicker.name).price = data.USD;
+       currentTicker.price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+       if (this.selected?.name === currentTicker.name) {
+         this.graph.push(data.USD);
+       }
+      }, 3000);
+
       this.ticker = "";
     },
 
+    
+
+  select(ticker){
+  this.selected = ticker;
+  this.graph = [];
+  },
+
+
     handleDelete(tickerToRemove){
 this.tickers = this.tickers.filter(t => t != tickerToRemove)
+    },
+
+
+    normalizeGraph(){
+      const maxValue = Math.max(...this.graph);
+      const minValue = Math.min(...this.graph);
+      return this.graph.map(
+        price => 5 + ((price - minValue) * 95) / (maxValue - minValue)
+      );
     }
   }
 
