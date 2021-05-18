@@ -6,7 +6,7 @@
       <div class="flex">
         <div class="max-w-xs">
           <label for="wallet" class="block text-sm font-medium text-gray-700"
-            >Тикер {{ ticker }}</label
+            >Введите название криптовалюты</label
           >
           <div class="mt-1 relative rounded-md shadow-md">
             <input
@@ -166,7 +166,7 @@ export default {
       this.ticker = "";
     },
 
-    
+
 
   select(ticker){
   this.selected = ticker;
